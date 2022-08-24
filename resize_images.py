@@ -1,31 +1,11 @@
-resize_images.py
-Quién tiene acceso
-No compartido
-Propiedades del sistema
-Tipo
-Texto
-Tamaño
-2 kB
-Almacenamiento usado
-2 kB
-Ubicación
-Colab Notebooks
-Propietario
-yo
-Modificado
-15:14 por mí
-Abierto
-15:18 por mí
-Creado
-15:14 con Google Drive Web (Unverified)
-Añadir descripción
-Los usuarios con acceso de lectura pueden descargar este elemento
 import os
 import glob
 import cv2
 
 if __name__ == "__main__":
     import argparse
+    max_height = 1920
+    max_width = 1920
 
     parser = argparse.ArgumentParser(
         description="Resize raw images to uniformed target size."
@@ -45,34 +25,49 @@ if __name__ == "__main__":
     parser.add_argument(
         "--ext", help="Raw image files extension to resize.", default="jpg", type=str
     )
-    parser.add_argument(
-        "--target-size",
-        help="Target size to resize as a tuple of 2 integers.",
-        default="(800, 600)",
-        type=str,
-    )
+
     args = parser.parse_args()
 
     raw_dir = args.raw_dir
     save_dir = args.save_dir
     ext = args.ext
-    target_size = eval(args.target_size)
-    msg = "--target-size must be a tuple of 2 integers"
-    assert isinstance(target_size, tuple) and len(target_size) == 2, msg
-    fnames = glob.glob(os.path.join(raw_dir, "*.{}".format(ext)))
+
+
+    fnames = glob.glob(os.path.join(raw_dir, "*/*.{}".format(ext)))
     os.makedirs(save_dir, exist_ok=True)
+    ffnames = []
+
+    for f in fnames:
+        if not 'small' in f:
+            ffnames.append(f)
+
     print(
-        "{} files to resize from directory `{}` to target size:{}".format(
-            len(fnames), raw_dir, target_size
+        "{} files to resize from directory `{}` to ext:{}".format(
+            len(ffnames), raw_dir, ext
         )
     )
-    for i, fname in enumerate(fnames):
+    for i, fname in enumerate(ffnames):
         print(".", end="", flush=True)
-        img = cv2.imread(fname)
-        img_small = cv2.resize(img, target_size)
-        new_fname = "{}.{}".format(str(i), ext)
+        img = cv2.imread(fname, cv2.IMREAD_UNCHANGED)
+        height, width = img.shape[:2]
+
+
+        # only shrink if img is bigger than required
+        if max_height < height or max_width < width:
+            # get scaling factor
+            scaling_factor = max_height / float(height)
+            if max_width/float(width) < scaling_factor:
+                scaling_factor = max_width / float(width)
+            # resize image
+            img_small = cv2.resize(img, None, fx=scaling_factor, fy=scaling_factor, interpolation=cv2.INTER_AREA)
+        else:
+            img_small = img
+
+        nname = fname.split('.')[0] + "_small"
+        new_fname = "{}.{}".format(nname, ext)
         small_fname = os.path.join(save_dir, new_fname)
         cv2.imwrite(small_fname, img_small)
+
     print(
         "\nDone resizing {} files.\nSaved to directory: `{}`".format(
             len(fnames), save_dir
