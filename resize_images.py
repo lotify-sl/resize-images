@@ -1,3 +1,4 @@
+#Edited by DGM @lotify. Referral Credits: https://github.com/GotG/object_detection_demo_flow/blob/master/resize_images.py
 import os
 import glob
 import cv2
