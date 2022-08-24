@@ -46,30 +46,32 @@ if __name__ == "__main__":
             len(ffnames), raw_dir, ext
         )
     )
-    for i, fname in enumerate(ffnames):
-        print(".", end="", flush=True)
-        img = cv2.imread(fname, cv2.IMREAD_UNCHANGED)
-        height, width = img.shape[:2]
+    for fname in ffnames:
+      print(".", end="", flush=True)
+      img = cv2.imread(fname, cv2.IMREAD_UNCHANGED)
+      height, width = img.shape[:2]
 
 
-        # only shrink if img is bigger than required
-        if max_height < height or max_width < width:
-            # get scaling factor
-            scaling_factor = max_height / float(height)
-            if max_width/float(width) < scaling_factor:
-                scaling_factor = max_width / float(width)
-            # resize image
-            img_small = cv2.resize(img, None, fx=scaling_factor, fy=scaling_factor, interpolation=cv2.INTER_AREA)
-        else:
-            img_small = img
+      # only shrink if img is bigger than required
+      if max_height < height or max_width < width:
+          # get scaling factor
+          scaling_factor = max_height / float(height)
+          if max_width/float(width) < scaling_factor:
+              scaling_factor = max_width / float(width)
+          # resize image
+          img_small = cv2.resize(img, None, fx=scaling_factor, fy=scaling_factor, interpolation=cv2.INTER_AREA)
+      else:
+          img_small = img
 
-        nname = fname.split('.')[0] + "_small"
-        new_fname = "{}.{}".format(nname, ext)
-        small_fname = os.path.join(save_dir, new_fname)
-        cv2.imwrite(small_fname, img_small)
+      new_fname = fname.split('.'+ext)[0]
+      new_fname = new_fname + "_small." + ext
+      small_fname = os.path.join(save_dir, new_fname)
+      print(small_fname)
+
+      cv2.imwrite(small_fname, img_small)
 
     print(
         "\nDone resizing {} files.\nSaved to directory: `{}`".format(
-            len(fnames), save_dir
+            len(ffnames), save_dir
         )
     )
